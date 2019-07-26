@@ -10,8 +10,8 @@ module Sequel
       DISTSTYLES = [:even, :key, :all].freeze
 
       def serial_primary_key_options
-        # redshift doesn't support serial type
-        super.merge(serial: false)
+        # redshift doesn't support serial/identity type
+        {:primary_key => true, :type=>Integer}
       end
 
       def connection_configuration_sqls
