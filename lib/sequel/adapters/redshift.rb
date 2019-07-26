@@ -18,6 +18,10 @@ module Sequel
         []
       end
 
+      def supports_foreign_key_parsing?
+        false
+      end
+
       def supports_index_parsing?
         false
       end
