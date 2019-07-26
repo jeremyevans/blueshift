@@ -9,23 +9,6 @@ module Sequel
       SORTSTYLES = [:compound, :interleaved].freeze
       DISTSTYLES = [:even, :key, :all].freeze
 
-      def optimize_table(table, create_options)
-        extension :redshift_schema_dumper
-        transaction do
-          gen = dump_table_generator(table)
-
-          rename_table table, :"old_#{table}"
-          create_table(:"new_#{table}", create_options) do
-            instance_eval(gen.dump_columns,     __FILE__, __LINE__)
-            instance_eval(gen.dump_constraints, __FILE__, __LINE__)
-            instance_eval(gen.dump_indexes,     __FILE__, __LINE__)
-          end
-          run %Q{INSERT INTO "new_#{table}" (SELECT * FROM "old_#{table}")}
-          rename_table :"new_#{table}", table
-          drop_table :"old_#{table}"
-        end
-      end
-
       def serial_primary_key_options
         # redshift doesn't support serial type
         super.merge(serial: false)
