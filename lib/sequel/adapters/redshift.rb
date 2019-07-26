@@ -1,4 +1,4 @@
-require 'sequel/adapters/postgres_ext'
+require 'sequel/adapters/postgres'
 
 module Sequel
   module Redshift
