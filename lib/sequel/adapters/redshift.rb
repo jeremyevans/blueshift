@@ -139,6 +139,37 @@ module Sequel
     end
 
     class Dataset < Postgres::Dataset
+      DURATION_UNITS = [:years, :months, :days, :hours, :minutes, :seconds].freeze
+      DEF_DURATION_UNITS = DURATION_UNITS.zip(DURATION_UNITS.map{|s| s.to_s.freeze}).freeze
+      # Try to make date arithmetic mostly work by converting years and
+      # months to days using average days per year and average days per
+      # month.
+      def date_add_sql_append(sql, da)
+        h = da.interval
+        expr = da.expr
+        cast_type = da.cast_type || Time
+        interval = String.new
+
+        each_valid_interval_unit(h, DEF_DURATION_UNITS) do |value, sql_unit|
+          case sql_unit 
+          when /years/
+            value = (value * 365.24).round
+            sql_unit = 'days'
+          when /months/
+            value = (value * 30.44).round
+            sql_unit = 'days'
+          end
+
+          interval << "#{value} #{sql_unit} "
+        end
+
+        if interval.empty?
+          return literal_append(sql, Sequel.cast(expr, cast_type))
+        else
+          return complex_expression_sql_append(sql, :+, [Sequel.cast(expr, cast_type), Sequel.cast(interval, :interval)])
+        end
+      end
+
       # Redshift does not support WITH in INSERT, DELETE, or UPDATE.
       def supports_cte?(type=:select)
         type == :select
