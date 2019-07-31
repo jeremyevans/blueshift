@@ -9,6 +9,14 @@ module Sequel
       SORTSTYLES = [:compound, :interleaved].freeze
       DISTSTYLES = [:even, :key, :all].freeze
 
+      def redshift_version
+        return @redshift_version if defined?(@redshift_version)
+        DB.get(Sequel.function(:version)) =~ /Redshift ([\d.]+)/
+        @redshift_version = if $1
+          $1.gsub('.', '').to_i
+        end
+      end
+
       def serial_primary_key_options
         # redshift doesn't support serial/identity type
         {:primary_key => true, :type=>Integer}
