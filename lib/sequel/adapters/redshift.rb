@@ -14,7 +14,7 @@ module Sequel
         {:primary_key => true, :type=>Integer}
       end
 
-      def connection_configuration_sqls
+      def connection_configuration_sqls(_=nil)
         []
       end
 
