@@ -17,6 +17,18 @@ module Sequel
         end
       end
 
+      def values(rows)
+        row1, *rows, row2 = rows 
+        ds = select(*row1.map.with_index{|v, i| Sequel.as(v, :"column#{i+1}")})
+        rows.each do |row|
+          ds = ds.union(select(*row), :all=>true, :from_self=>false)
+        end
+        if row2
+          ds = ds.union(select(*row2), :all=>true)
+        end
+        ds
+      end
+
       def serial_primary_key_options
         # redshift doesn't support serial/identity type
         {:primary_key => true, :type=>Integer}
