@@ -119,10 +119,25 @@ module Sequel
     end
 
     class Dataset < Postgres::Dataset
+      # Redshift does not support WITH in INSERT, DELETE, or UPDATE.
+      def supports_cte?(type=:select)
+        type == :select
+      end
+
+      # Redshift supports WITH in some subqueries.
+      def supports_cte_in_subqueries?
+        supports_cte?
+      end
+
       # Redshift doesn't support RETURNING statement
       def insert_returning_sql(sql)
         # do nothing here
         sql
+      end
+
+      # PostgreSQL 8.4+ supports window functions
+      def supports_window_functions?
+        true
       end
     end
   end
